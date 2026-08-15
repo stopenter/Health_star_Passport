@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>互動式健康護照｜星動指數版</title>
+<style>
+:root{
+  --bg:#f5f8fb;--card:#fff;--text:#17324d;--muted:#64748b;
+  --blue:#2563eb;--green:#16a34a;--orange:#ea580c;--red:#dc2626;
+  --line:#dbe5ef;--yellow:#fef3c7
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft JhengHei","Noto Sans TC",sans-serif;line-height:1.55}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#eaf2ff,#f8fbff);border-bottom:1px solid var(--line);padding:14px 16px}
+.wrap{max-width:1140px;margin:auto}
+h1{margin:0;font-size:clamp(26px,4vw,40px)}
+.subtitle{color:var(--muted)}
+.queue{display:grid;grid-template-columns:repeat(3,1fr) 1.6fr;gap:10px;margin-top:12px}
+.qcard,.qsummary{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.qcard span{font-size:28px}.qcard b{display:block;font-size:24px}
+.qsummary{background:#ecfdf5;color:#166534;font-weight:800}
+.qbar{height:8px;background:#d9efe1;border-radius:999px;overflow:hidden;margin-top:7px}.qbar div{height:100%;background:var(--green)}
+.tabs{display:flex;gap:8px;overflow:auto;margin-top:12px}
+.tabs button,.btn{border:0;border-radius:12px;padding:11px 15px;font-size:17px;font-weight:800;cursor:pointer}
+.tabs button{background:#fff;color:var(--text);border:1px solid var(--line);white-space:nowrap}
+.tabs button.on,.btn{background:var(--blue);color:#fff}
+main{padding:20px 16px 60px}.page{display:none}.page.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 8px 26px rgba(23,50,77,.06)}
+.profile{display:flex;gap:16px;align-items:center}.avatar{width:84px;height:84px;border-radius:22px;background:#fde7cf;display:grid;place-items:center;font-size:48px}
+.muted{color:var(--muted)}.notice{background:var(--yellow);color:#854d0e;border-radius:14px;padding:14px;font-weight:700}
+.goal{background:#ecfdf5;color:#166534;border:2px solid #86efac;border-radius:16px;padding:16px;font-size:19px;font-weight:800}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.choice{border:2px solid var(--line);background:#fff;border-radius:16px;padding:14px;font-size:17px;font-weight:800;cursor:pointer;text-align:center}
+.choice.on{border-color:var(--blue);background:#eef4ff}.icon{font-size:38px;display:block}
+label{display:block;font-weight:800;margin-top:12px}select,input,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:17px}textarea{min-height:88px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.secondary{background:#e8eef5;color:var(--text)}
+.week,.follow-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.day,.follow-day{border:2px solid var(--line);border-radius:12px;padding:9px;text-align:center;background:#fff;cursor:pointer}.day.on,.follow-day.done{background:#ecfdf5;border-color:#22c55e}
+.progress{height:14px;background:#e7edf4;border-radius:999px;overflow:hidden}.progress div{height:100%;background:var(--green)}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center;background:#fff}.stat b{display:block;font-size:24px}
+.star-panel{max-width:500px;margin:auto;background:linear-gradient(135deg,#fff8d8,#fff);border:2px solid #facc15;border-radius:28px;padding:20px;text-align:center}
+.star-inner{background:#fff;color:#7c5800;border:3px solid #fde68a;border-radius:20px;padding:20px}
+.star-level{font-size:34px;font-weight:900;margin-top:8px}
+.star-icons{font-size:40px;letter-spacing:4px;color:#f5b400;min-height:54px}
+.assess{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:#fbfdff}.assess legend{font-size:20px;font-weight:900}.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.opts label{margin:0;border:2px solid var(--line);border-radius:14px;padding:12px;background:#fff;text-align:center;cursor:pointer}.opts label.checked{border-color:var(--blue);background:#eef4ff}.opts input{width:auto}
+.stepbar{height:16px;background:#e7edf4;border-radius:999px;overflow:hidden}.stepbar div{height:100%;background:var(--blue);transition:.25s}
+.question-status{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.pill{display:inline-block;padding:7px 11px;border-radius:999px;background:#eef4ff;color:#1d4ed8;font-weight:900}
+.result{padding:14px;border-radius:14px;font-weight:800;background:#fffbeb;color:#92400e}
+.review{width:100%;border-collapse:collapse}.review th,.review td{padding:9px;border-bottom:1px solid var(--line);text-align:left}
+.printbox{border:2px dashed #9fb4c9}
+.sim-panel{margin-top:12px;background:#fff;border:1px dashed #93c5fd;border-radius:14px;padding:10px 12px}
+.sim-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.sim-title{font-weight:900;color:#1d4ed8}.sim-actions{display:flex;gap:8px;flex-wrap:wrap}
+.sim-btn{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:10px;padding:8px 11px;font-size:15px;font-weight:800;cursor:pointer}.sim-btn.reset{background:#f8fafc;color:#475569;border-color:#cbd5e1}.sim-note{margin-top:7px;font-size:14px;color:var(--muted)}
+.exercise-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.exercise-card{position:relative;border:2px solid var(--line);background:#fff;border-radius:18px;padding:16px;min-height:205px;cursor:pointer;text-align:left;transition:.18s;box-shadow:0 4px 14px rgba(23,50,77,.04)}
+.exercise-card:hover{transform:translateY(-2px);border-color:#93c5fd}.exercise-card.on{border-color:var(--blue);background:#eef4ff;box-shadow:0 0 0 4px rgba(37,99,235,.08)}
+.exercise-card .checkmark{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;background:#fff;color:#fff;font-weight:900}.exercise-card.on .checkmark{background:var(--blue);border-color:var(--blue)}
+.exercise-icon{font-size:48px;line-height:1;margin-bottom:10px}.exercise-name{font-size:22px;font-weight:900}.exercise-stars{color:#f59e0b;letter-spacing:1px;margin-top:5px;font-size:17px}.exercise-tag{display:inline-block;margin-top:7px;padding:5px 9px;border-radius:999px;background:#ecfdf5;color:#166534;font-size:14px;font-weight:900}.exercise-time{margin-top:9px;font-weight:800}.exercise-note{margin-top:7px;color:var(--muted);font-size:15px}
+.exercise-summary{margin-top:18px;border:2px solid #bfdbfe;background:#eff6ff;border-radius:18px;padding:16px}.exercise-chips{display:flex;gap:8px;flex-wrap:wrap}.exercise-chip{background:#fff;border:1px solid #bfdbfe;border-radius:999px;padding:7px 11px;font-weight:800;color:#1d4ed8}
+.exercise-filter{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}.filter-btn{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}.filter-btn.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+@media(max-width:850px){.queue{grid-template-columns:repeat(2,1fr)}.qsummary{grid-column:span 2}.c4,.c5,.c6,.c7,.c8{grid-column:span 12}.stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.queue{grid-template-columns:1fr 1fr}.week,.follow-grid{grid-template-columns:repeat(4,1fr)}}
+@media print{header,.no-print{display:none!important}.page{display:none!important}#passport{display:block!important}.card{box-shadow:none;border:none}}
+
+/* ===== iPad 閱讀最佳化 ===== */
+@media (min-width: 768px) and (max-width: 1366px) {
+  header{
+    padding:8px 12px;
+    max-height:20vh;
+    overflow:auto;
+  }
+
+  header .wrap{
+    max-width:100%;
+  }
+
+  header h1{
+    font-size:22px;
+    line-height:1.15;
+    display:inline-block;
+    margin-right:8px;
+  }
+
+  header .subtitle{
+    display:inline-block;
+    font-size:13px;
+  }
+
+  .queue{
+    grid-template-columns:110px 110px 120px 1fr;
+    gap:6px;
+    margin-top:6px;
+  }
+
+  .qcard,
+  .qsummary{
+    padding:5px 7px;
+    min-height:42px;
+    border-radius:10px;
+  }
+
+  .qcard{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+  }
+
+  .qcard span{
+    font-size:19px;
+  }
+
+  .qcard small{
+    font-size:11px;
+    white-space:nowrap;
+  }
+
+  .qcard b{
+    display:inline;
+    font-size:17px;
+    margin-left:2px;
+  }
+
+  .qsummary{
+    font-size:12px;
+    line-height:1.25;
+  }
+
+  .qsummary small{
+    font-size:11px;
+  }
+
+  .qbar{
+    height:5px;
+    margin-top:3px;
+  }
+
+  .sim-panel{
+    margin-top:5px;
+    padding:5px 8px;
+    border-radius:10px;
+  }
+
+  .sim-title{
+    font-size:12px;
+  }
+
+  .sim-actions{
+    gap:4px;
+  }
+
+  .sim-btn{
+    padding:4px 7px;
+    font-size:11px;
+    border-radius:7px;
+  }
+
+  .sim-note{
+    display:none;
+  }
+
+  .tabs{
+    margin-top:5px;
+    gap:5px;
+  }
+
+  .tabs button{
+    padding:5px 9px;
+    font-size:12px;
+    border-radius:8px;
+  }
+
+  main{
+    padding:14px 14px 48px;
+  }
+
+  .card{
+    padding:16px;
+    border-radius:16px;
+  }
+
+  .grid{
+    gap:12px;
+  }
+
+  .exercise-card-grid{
+    grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:10px;
+  }
+
+  .exercise-card{
+    min-height:180px;
+    padding:13px;
+  }
+
+  .exercise-icon{
+    font-size:40px;
+  }
+
+  .exercise-name{
+    font-size:18px;
+  }
+
+  .exercise-note,
+  .exercise-time{
+    font-size:14px;
+  }
+
+  .choice-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+
+  select,input,textarea{
+    font-size:16px;
+  }
+
+  .star-panel{
+    max-width:100%;
+  }
+}
+
+/* iPad 直向時仍維持清楚且不擠壓 */
+@media (min-width: 768px) and (max-width: 900px) {
+  .queue{
+    grid-template-columns:90px 90px 105px 1fr;
+  }
+
+  .exercise-card-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .choice-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .stat-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+  }
+}
+
+/* 一般平板與手機避免固定頁首過高 */
+@media (max-width: 767px) {
+  header{
+    position:sticky;
+    max-height:28vh;
+    overflow:auto;
+  }
+}
+
+</style>
+</head>
+<body>
+<header>
+<div class="wrap">
+  <h1>互動式健康護照</h1>
+  <div class="subtitle">慢性病共同衛教與星動指數</div>
+
+  <div class="queue">
+    <div class="qcard"><span>🩺</span><small>目前叫號</small><b id="currentNo">22</b></div>
+    <div class="qcard"><span>👤</span><small>您的號碼</small><b>36</b></div>
+    <div class="qcard"><span>⏳</span><small>前方等候</small><b id="waitingNo">14位</b></div>
+    <div class="qsummary"><div id="queueText">約10至20分鐘，可安心互動</div><div class="qbar"><div id="queueBar" style="width:61%"></div></div><small id="queueMode">🟢 建議：運動與生活目標衛教</small></div>
+  </div>
+
+  <div class="sim-panel no-print">
+    <div class="sim-head">
+      <div class="sim-title">🧪 候診進度模擬</div>
+      <div class="sim-actions">
+        <button class="sim-btn" type="button" onclick="advanceQueue(1)">前進 1 號</button>
+        <button class="sim-btn" type="button" onclick="advanceQueue(3)">前進 3 號</button>
+        <button class="sim-btn" type="button" onclick="setQueueStage('full')">完整衛教</button>
+        <button class="sim-btn" type="button" onclick="setQueueStage('focus')">重點衛教</button>
+        <button class="sim-btn" type="button" onclick="setQueueStage('passport')">快速護照</button>
+        <button class="sim-btn" type="button" onclick="setQueueStage('visit')">輪到看診</button>
+        <button class="sim-btn reset" type="button" onclick="resetQueue()">重設</button>
+      </div>
+    </div>
+    <div class="sim-note">此功能用於原型測試與成果展示，模擬叫號變化及系統建議的衛教模式。</div>
+  </div>
+
+  <div class="tabs">
+    <button data-p="home" class="on">健康首頁</button>
+    <button data-p="plan">我的計畫</button>
+    <button data-p="check">每日打卡</button>
+    <button data-p="star">健康生活星動指數</button>
+    <button data-p="review">回診追蹤</button>
+    <button data-p="passport">帶回家護照</button>
+  </div>
+</div>
+</header>
+
+<main class="wrap">
+<section id="home" class="page on">
+  <div class="grid">
+    <div class="card c4"><h2>基本資料</h2><div class="profile"><div class="avatar">👩‍🌾</div><div><h3>王○○ 女士</h3><div>60歲</div><div>糖尿病共同照護</div><div class="muted">新陳代謝科門診</div></div></div></div>
+    <div class="card c8"><h2>近一年 HbA1c 趨勢</h2><svg viewBox="0 0 760 280" style="width:100%"><line x1="55" y1="30" x2="55" y2="230" stroke="#94a3b8"/><line x1="55" y1="230" x2="720" y2="230" stroke="#94a3b8"/><line x1="55" y1="175" x2="720" y2="175" stroke="#dc2626" stroke-dasharray="7 7"/><text x="650" y="165" fill="#dc2626">目標7%</text><polyline points="90,70 205,105 320,130 435,145 550,120 665,95" fill="none" stroke="#2563eb" stroke-width="6"/><g fill="#2563eb"><circle cx="90" cy="70" r="8"/><circle cx="205" cy="105" r="8"/><circle cx="320" cy="130" r="8"/><circle cx="435" cy="145" r="8"/><circle cx="550" cy="120" r="8"/><circle cx="665" cy="95" r="8" fill="#dc2626"/></g><g text-anchor="middle" font-size="16"><text x="90" y="50">9.3%</text><text x="205" y="85">8.6%</text><text x="320" y="110">8.1%</text><text x="435" y="125">7.8%</text><text x="550" y="100">8.3%</text><text x="665" y="75">8.8%</text><text x="90" y="255">去年8月</text><text x="205" y="255">10月</text><text x="320" y="255">12月</text><text x="435" y="255">今年2月</text><text x="550" y="255">4月</text><text x="665" y="255">6月</text></g></svg><div class="notice">最近兩次數值有回升，我們一起找出一項容易開始的生活改變。</div></div>
+  </div>
+</section>
+
+<section id="plan" class="page">
+  <div class="card">
+    <h2>選擇適合的運動</h2>
+    <p class="muted">可複選，點選圖卡後會顯示藍色外框與勾選記號。</p>
+    <div class="exercise-filter">
+      <button class="filter-btn on" data-filter="全部" onclick="setExerciseFilter('全部')">全部</button>
+      <button class="filter-btn" data-filter="有氧" onclick="setExerciseFilter('有氧')">有氧運動</button>
+      <button class="filter-btn" data-filter="肌力" onclick="setExerciseFilter('肌力')">肌力訓練</button>
+      <button class="filter-btn" data-filter="柔軟度" onclick="setExerciseFilter('柔軟度')">柔軟度</button>
+      <button class="filter-btn" data-filter="平衡" onclick="setExerciseFilter('平衡')">平衡活動</button>
+      <button class="filter-btn" data-filter="生活型態" onclick="setExerciseFilter('生活型態')">生活型態活動</button>
+    </div>
+    <div id="activities" class="exercise-card-grid"></div>
+    <div class="exercise-summary"><h3>目前已選擇</h3><div id="exerciseSummary" class="exercise-chips"></div><p id="exerciseSummaryText" class="muted" style="margin-bottom:0"></p></div>
+  </div>
+
+  <div class="card">
+    <h2>設定小目標</h2>
+    <label>每次時間</label>
+    <select id="duration">
+      <option>10 分鐘（開始養成）</option><option>15 分鐘</option><option>20 分鐘</option><option selected>30 分鐘（建議）</option><option>45 分鐘</option><option>60 分鐘</option>
+    </select>
+    <label>每週次數</label>
+    <select id="frequency">
+      <option>2 次</option><option selected>3 次（初學推薦）</option><option>4 次</option><option>5 次（建議）</option><option>每天</option>
+    </select>
+    <label>您最容易開始運動的時間</label>
+    <select id="time">
+      <option>早餐前（請先確認血糖）</option><option>早餐後 30～60 分鐘</option><option>上午空檔</option><option>午餐後 30～60 分鐘</option><option>下午空檔</option><option>傍晚</option><option selected>晚餐後 30～60 分鐘</option><option>睡前伸展 5～10 分鐘</option><option>依每天空閒時間安排</option>
+    </select>
+    <label>可能遇到的困難</label>
+    <select id="barrier">
+      <option>太忙沒時間</option><option>工作或家務後太累</option><option>容易忘記</option><option>沒有人陪伴</option><option>不知道做什麼運動</option><option>擔心血糖太低</option><option>擔心膝蓋或關節不舒服</option><option>腳部容易不舒服</option><option>天氣太熱或下雨</option><option>沒有適合運動的地方</option><option>尚未養成運動習慣</option>
+    </select>
+    <label>替代方案</label>
+    <select id="backup">
+      <option>每次先走 10 分鐘</option><option>分成兩次，各做 10～15 分鐘</option><option>在住家附近多走一圈</option><option>在家做椅子運動</option><option>在家做 10 分鐘伸展</option><option>下雨時改成室內走動</option><option>和家人或朋友一起散步</option><option>跟著運動影片一起做</option><option>使用彈力帶做簡單肌力訓練</option><option>今天沒完成，改到明天再做</option>
+    </select>
+    <div class="actions"><button class="btn" onclick="savePlan()">儲存計畫</button></div>
+  </div>
+</section>
+
+<section id="check" class="page">
+  <div class="grid">
+    <div class="card c7">
+      <h2>今日運動打卡</h2>
+      <div class="choice-grid"><button class="choice" id="doneYes" onclick="setDone(true)">✅ 有完成</button><button class="choice" id="doneNo" onclick="setDone(false)">🌱 今天休息</button></div>
+      <label>運動多久</label><select id="minutes"><option value="0">未運動</option><option>10</option><option selected>20</option><option>30</option><option>45</option><option>60</option></select>
+      <label>活動類型</label><select id="activityToday"></select>
+      <label>運動後感受</label><select id="feeling"><option>很舒服</option><option>有點累</option><option>很有成就感</option><option>不太舒服</option></select>
+      <label>今日血糖，可略過</label><input id="glucose" type="number" placeholder="例如135">
+      <label>備註</label><textarea id="checkNote"></textarea>
+      <div class="actions"><button class="btn" onclick="saveCheckin()">儲存今日打卡</button></div>
+    </div>
+    <div class="card c5"><h2>本週紀錄</h2><div id="week" class="week"></div><div class="progress" style="margin-top:14px"><div id="weekBar"></div></div><p id="weekText"></p><div class="goal" id="starSyncText">每日打卡會同步累積星動能量。</div></div>
+  </div>
+</section>
+
+<section id="star" class="page">
+  <div class="grid">
+    <div class="card c7">
+      <div class="question-status">
+        <div><h2 style="margin:0">健康生活星動指數評估</h2><span class="pill" id="questionCount">已完成 0 / 5 題</span></div>
+        <div style="min-width:240px;flex:1"><div class="stepbar"><div id="questionBar" style="width:0%"></div></div></div>
+      </div>
+      <p class="muted">每完成一題會立即儲存。全部完成後即可查看星動指數。</p>
+      <form id="starForm">
+        <fieldset class="assess"><legend>1. 今天是否有胸痛、昏厥或休息時明顯喘不過氣？</legend><div class="opts"><label><input type="radio" name="q1" value="0">沒有</label><label><input type="radio" name="q1" value="99">有</label></div></fieldset>
+        <fieldset class="assess"><legend>2. 今天是否有冒冷汗、發抖、頭暈等低血糖症狀？</legend><div class="opts"><label><input type="radio" name="q2" value="0">沒有</label><label><input type="radio" name="q2" value="99">有</label></div></fieldset>
+        <fieldset class="assess"><legend>3. 腳部是否有新傷口、水泡、紅腫或疼痛？</legend><div class="opts"><label><input type="radio" name="q3" value="0">沒有</label><label><input type="radio" name="q3" value="99">有</label></div></fieldset>
+        <fieldset class="assess"><legend>4. 過去一週有幾天做至少10分鐘活動？</legend><div class="opts"><label><input type="radio" name="q4" value="3">0天</label><label><input type="radio" name="q4" value="2">1至2天</label><label><input type="radio" name="q4" value="1">3至4天</label><label><input type="radio" name="q4" value="0">5天以上</label></div></fieldset>
+        <fieldset class="assess"><legend>5. 對未來一週開始運動，信心有多少？</legend><div class="opts"><label><input type="radio" name="q5" value="3">還沒準備好</label><label><input type="radio" name="q5" value="2">有一點信心</label><label><input type="radio" name="q5" value="1">有信心</label><label><input type="radio" name="q5" value="0">非常有信心</label></div></fieldset>
+        <div id="missingNotice" class="notice" style="display:none"></div>
+        <div class="actions"><button type="button" class="btn" id="drawBtn" onclick="calculateStarIndex()" disabled>查看我的星動指數</button><button type="button" class="btn secondary" onclick="resetAssessment()">重新評估</button></div>
+      </form>
+    </div>
+
+    <div class="card c5">
+      <div class="star-panel">
+        <div class="star-inner">
+          <h3>健康生活星動指數</h3>
+          <div id="starIcons" class="star-icons">☆☆☆☆☆</div>
+          <div id="starName" class="star-level">等待評估</div>
+          <div id="starLine" style="font-size:20px;font-weight:800;line-height:1.8">完成評估後顯示結果</div>
+        </div>
+      </div>
+      <div id="starAdvice" class="result" style="margin-top:14px">完成全部題目後，系統會提供重點建議。</div>
+      <div style="margin-top:16px">
+        <h3>近30日星動能量</h3>
+        <div class="progress"><div id="starEnergy"></div></div>
+        <p id="starEnergyText"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="review" class="page">
+  <div class="card">
+    <h2>回診追蹤摘要</h2>
+    <div class="stat-grid">
+      <div class="stat"><small>近30日完成</small><b id="rDone">0天</b></div>
+      <div class="stat"><small>完成率</small><b id="rRate">0%</b></div>
+      <div class="stat"><small>平均時間</small><b id="rAvg">0分</b></div>
+      <div class="stat"><small>目前星動指數</small><b id="rLevel">尚未評估</b></div>
+    </div>
+  </div>
+  <div class="card">
+    <table class="review">
+      <thead><tr><th>日期</th><th>完成</th><th>活動</th><th>分鐘</th><th>感受</th><th>血糖</th></tr></thead>
+      <tbody id="reviewRows"></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="passport" class="page">
+  <div class="card printbox">
+    <h2>我的健康行動護照</h2>
+    <p><b>姓名：</b>王○○　<b>日期：</b><span id="today"></span></p>
+    <h3>我選擇的運動</h3><div id="passportActivities" class="goal"></div>
+    <h3>我的行動計畫</h3><p id="passportPlan"></p>
+    <h3>遇到困難時</h3><p id="passportBackup"></p>
+    <h3>我的星動指數</h3><p id="passportStar"></p>
+    <div class="actions no-print"><button class="btn" onclick="print()">列印或另存PDF</button></div>
+  </div>
+</section>
+</main>
+
+<script>
+const exerciseCatalog=[
+{name:"快走",icon:"🚶",category:"有氧",stars:5,tag:"最推薦",time:"20～30分鐘",note:"適合多數慢性病患者"},
+{name:"健走",icon:"🥾",category:"有氧",stars:5,tag:"推薦",time:"20～30分鐘",note:"可依體力調整速度"},
+{name:"公園散步",icon:"🌳",category:"有氧",stars:4,tag:"容易開始",time:"15～30分鐘",note:"適合初學者"},
+{name:"超慢跑",icon:"🏃",category:"有氧",stars:3,tag:"依體力進行",time:"10～20分鐘",note:"注意膝關節狀況"},
+{name:"騎腳踏車",icon:"🚲",category:"有氧",stars:4,tag:"低衝擊",time:"20～30分鐘",note:"戶外注意交通安全"},
+{name:"游泳或水中運動",icon:"🏊",category:"有氧",stars:4,tag:"低關節負擔",time:"20～30分鐘",note:"注意足部傷口與安全"},
+{name:"廣場舞／健康舞",icon:"💃",category:"有氧",stars:4,tag:"有趣易持續",time:"20～30分鐘",note:"增加社交互動"},
+{name:"彈力帶肌力訓練",icon:"💪",category:"肌力",stars:5,tag:"推薦",time:"10～20分鐘",note:"每週2至3次"},
+{name:"扶椅抬腿",icon:"🪑",category:"肌力",stars:5,tag:"安全入門",time:"10～15分鐘",note:"適合膝蓋較不穩者"},
+{name:"坐姿體操",icon:"🧘",category:"肌力",stars:5,tag:"居家可做",time:"10～15分鐘",note:"適合體力較弱者"},
+{name:"爬樓梯",icon:"🪜",category:"肌力",stars:3,tag:"依能力",time:"5～10分鐘",note:"注意膝關節與平衡"},
+{name:"伸展運動",icon:"🙆‍♀️",category:"柔軟度",stars:5,tag:"每日可做",time:"5～10分鐘",note:"運動前後皆適合"},
+{name:"八段錦",icon:"🍃",category:"柔軟度",stars:5,tag:"溫和推薦",time:"10～20分鐘",note:"兼顧呼吸與柔軟度"},
+{name:"跟音樂律動",icon:"🎵",category:"柔軟度",stars:4,tag:"輕鬆有趣",time:"10～20分鐘",note:"在家即可完成"},
+{name:"太極拳",icon:"☯️",category:"平衡",stars:5,tag:"改善平衡",time:"15～30分鐘",note:"適合長者與初學者"},
+{name:"單腳站立扶牆",icon:"🧍",category:"平衡",stars:4,tag:"注意安全",time:"每側10～20秒",note:"靠牆或扶穩固家具"},
+{name:"市場或住家多走一圈",icon:"🛒",category:"生活型態",stars:5,tag:"融入日常",time:"10～20分鐘",note:"不必另外安排場地"},
+{name:"園藝活動",icon:"🌼",category:"生活型態",stars:4,tag:"生活化活動",time:"20～30分鐘",note:"避免長時間彎腰"},
+{name:"家務活動",icon:"🧹",category:"生活型態",stars:4,tag:"日常累積",time:"20～30分鐘",note:"例如掃地與整理環境"}
+];
+let activityOptions=exerciseCatalog.map(x=>x.name);
+let currentExerciseFilter="全部";
+let data=JSON.parse(localStorage.getItem("healthPassportStarIndex")||"{}");
+data.activities=data.activities||["快走"];
+data.logs=data.logs||[];
+data.assessment=data.assessment||{};
+let doneToday=true;
+
+function save(){localStorage.setItem("healthPassportStarIndex",JSON.stringify(data))}
+function show(id){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));
+  document.getElementById(id).classList.add("on");
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("on",x.dataset.p===id));
+  if(id==="review") renderReview();
+  if(id==="passport") renderPassport();
+  if(id==="star") renderStarEnergy();
+  scrollTo(0,0);
+}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>show(b.dataset.p));
+
+function renderActivities(){
+  const filtered=currentExerciseFilter==="全部"?exerciseCatalog:exerciseCatalog.filter(x=>x.category===currentExerciseFilter);
+  activities.innerHTML=filtered.map(x=>{
+    const selected=data.activities.includes(x.name);
+    return `<button class="exercise-card ${selected?"on":""}" onclick="toggleActivity('${x.name}')">
+      <span class="checkmark">${selected?"✓":""}</span>
+      <div class="exercise-icon">${x.icon}</div>
+      <div class="exercise-name">${x.name}</div>
+      <div class="exercise-stars">${"★".repeat(x.stars)}${"☆".repeat(5-x.stars)}</div>
+      <span class="exercise-tag">${x.tag}</span>
+      <div class="exercise-time">⏱ ${x.time}</div>
+      <div class="exercise-note">${x.note}</div>
+    </button>`;
+  }).join("");
+  activityToday.innerHTML=activityOptions.map(x=>`<option>${x}</option>`).join("");
+  renderExerciseSummary();
+}
+function toggleActivity(x){data.activities=data.activities.includes(x)?data.activities.filter(y=>y!==x):[...data.activities,x];save();renderActivities()}
+function setExerciseFilter(category){currentExerciseFilter=category;document.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("on",b.dataset.filter===category));renderActivities()}
+function renderExerciseSummary(){
+  if(!data.activities.length){exerciseSummary.innerHTML='<span class="muted">尚未選擇運動</span>';exerciseSummaryText.textContent="請先選擇一至三項較願意開始的活動。";return}
+  exerciseSummary.innerHTML=data.activities.map(x=>`<span class="exercise-chip">✓ ${x}</span>`).join("");
+  exerciseSummaryText.textContent=data.activities.length<=3?"建議先從其中一項開始，成功後再增加。":"目前選擇較多，建議和個管師共同挑選一至三項作為第一階段目標。";
+}
+
+function savePlan(){data.duration=duration.value;data.frequency=frequency.value;data.time=time.value;data.barrier=barrier.value;data.backup=backup.value;save();alert("計畫已儲存")}
+function setDone(v){doneToday=v;doneYes.classList.toggle("on",v);doneNo.classList.toggle("on",!v);if(!v)minutes.value="0"}
+function dateKey(d=new Date()){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function saveCheckin(){
+  const log={date:dateKey(),done:doneToday,minutes:doneToday?Number(minutes.value):0,activity:activityToday.value,feeling:feeling.value,glucose:glucose.value,note:checkNote.value};
+  data.logs=data.logs.filter(x=>x.date!==log.date);data.logs.push(log);save();renderWeek();renderStarEnergy();
+  alert(doneToday?"今天完成了，星動能量增加！":"今天休息也沒關係，明天重新開始。");
+}
+function lastDates(n){const a=[];for(let i=n-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);a.push(dateKey(d))}return a}
+function renderWeek(){
+  const map=new Map(data.logs.map(x=>[x.date,x]));
+  week.innerHTML=lastDates(7).map(k=>`<div class="day ${map.get(k)?.done?"on":""}">${k.slice(5).replace("-","/")}<div>${map.get(k)?.done?"✅":"○"}</div></div>`).join("");
+  const done=data.logs.filter(x=>lastDates(7).includes(x.date)&&x.done).length;
+  weekBar.style.width=Math.round(done/7*100)+"%";
+  weekText.textContent=`本週完成 ${done} 天`;
+}
+
+function assessmentGroups(){return ["q1","q2","q3","q4","q5"]}
+function selected(name){const e=document.querySelector(`input[name="${name}"]:checked`);return e?e.value:null}
+function restoreAssessment(){
+  assessmentGroups().forEach(n=>{const v=data.assessment[n];if(v!==undefined){const e=document.querySelector(`input[name="${n}"][value="${v}"]`);if(e)e.checked=true}});
+  updateAssessmentProgress();
+}
+function updateAssessmentProgress(){
+  let completed=0;const missing=[];
+  assessmentGroups().forEach((n,i)=>{const v=selected(n);if(v!==null){completed++;data.assessment[n]=v}else missing.push(i+1)});
+  save();
+  questionCount.textContent=`已完成 ${completed} / 5 題`;
+  questionBar.style.width=(completed/5*100)+"%";
+  drawBtn.disabled=completed!==5;
+  missingNotice.style.display=completed===5?"none":"block";
+  missingNotice.textContent=completed===5?"":`尚未完成：第 ${missing.join("、")} 題`;
+  document.querySelectorAll(".opts label").forEach(l=>l.classList.toggle("checked",!!l.querySelector("input:checked")));
+}
+document.querySelectorAll('#starForm input[type="radio"]').forEach(e=>e.addEventListener("change",updateAssessmentProgress));
+
+const starContent={
+  1:{name:"星動休息",line:"先照顧自己，今天安全最重要",advice:"先休息，必要時請醫療人員評估。"},
+  2:{name:"星動暖身",line:"先小小開始，動一點也很棒",advice:"5 至 10 分鐘低強度活動。"},
+  3:{name:"星動上線",line:"今天適合開始，慢慢動起來",advice:"快走 10 至 15 分鐘，每週 2 至 3 次。"},
+  4:{name:"星動加油",line:"狀況不錯，規律運動正適合",advice:"20 至 30 分鐘中等強度活動。"},
+  5:{name:"星動滿格",line:"活力滿滿，保持就是最棒的進步",advice:"維持規律運動，加入肌力與伸展。"}
+};
+
+function calculateStarIndex(){
+  const missing=assessmentGroups().filter(n=>selected(n)===null);
+  if(missing.length){missingNotice.style.display="block";missingNotice.textContent=`請先完成第 ${missing.map(x=>x.replace("q","")).join("、")} 題`;return}
+  let stars=3;
+  const danger=["q1","q2","q3"].some(n=>Number(selected(n))===99);
+  if(danger){stars=1}
+  else{
+    const activityScore=Number(selected("q4"));
+    const confidenceScore=Number(selected("q5"));
+    const score=activityScore+confidenceScore;
+    if(score>=5) stars=2;
+    else if(score>=3) stars=3;
+    else if(score>=1) stars=4;
+    else stars=5;
+  }
+  data.starResult={stars,...starContent[stars]};
+  save();
+  renderStarResult();
+  renderPassport();
+  renderReview();
+}
+function renderStarResult(){
+  const r=data.starResult;
+  if(!r){
+    starIcons.textContent="☆☆☆☆☆";
+    starName.textContent="等待評估";
+    starLine.textContent="完成評估後顯示結果";
+    starAdvice.textContent="完成全部題目後，系統會提供重點建議。";
+    return;
+  }
+  starIcons.textContent="⭐".repeat(r.stars)+"☆".repeat(5-r.stars);
+  starName.textContent=r.name;
+  starLine.textContent=r.line;
+  starAdvice.textContent=r.advice;
+}
+function resetAssessment(){
+  data.assessment={};delete data.starResult;save();starForm.reset();updateAssessmentProgress();renderStarResult();renderPassport();renderReview();
+}
+
+function renderStarEnergy(){
+  const done=data.logs.filter(x=>lastDates(30).includes(x.date)&&x.done).length;
+  const rate=Math.round(done/30*100);
+  starEnergy.style.width=rate+"%";
+  starEnergyText.textContent=`近30日完成 ${done} 天，星動能量 ${rate}%`;
+  if(document.getElementById("starSyncText")) starSyncText.textContent=`近30日完成 ${done} 天，星動能量 ${rate}%。`;
+}
+function renderReview(){
+  const logs=data.logs.filter(x=>lastDates(30).includes(x.date)).sort((a,b)=>b.date.localeCompare(a.date));
+  const done=logs.filter(x=>x.done);
+  rDone.textContent=done.length+"天";
+  rRate.textContent=Math.round(done.length/30*100)+"%";
+  rAvg.textContent=(done.length?Math.round(done.reduce((s,x)=>s+x.minutes,0)/done.length):0)+"分";
+  rLevel.textContent=data.starResult?`${"⭐".repeat(data.starResult.stars)} ${data.starResult.name}`:"尚未評估";
+  reviewRows.innerHTML=logs.length?logs.map(x=>`<tr><td>${x.date}</td><td>${x.done?"✅":"休息"}</td><td>${x.done?x.activity:""}</td><td>${x.minutes}</td><td>${x.feeling||""}</td><td>${x.glucose||""}</td></tr>`).join(""):`<tr><td colspan="6">尚無打卡資料</td></tr>`;
+}
+function renderPassport(){
+  passportActivities.textContent=data.activities.join("、")||"尚未選擇";
+  passportPlan.textContent=`每次 ${data.duration||"30 分鐘（建議）"}，每週 ${data.frequency||"3 次（初學推薦）"}，安排在 ${data.time||"晚餐後 30～60 分鐘"}。`;
+  passportBackup.textContent=`若遇到「${data.barrier||"太忙沒時間"}」，替代方案是「${data.backup||"每次先走 10 分鐘"}」。`;
+  passportStar.textContent=data.starResult?`${"⭐".repeat(data.starResult.stars)} ${data.starResult.name}：${data.starResult.line}。${data.starResult.advice}`:"尚未完成星動指數評估";
+}
+
+let queueCurrent=Number(localStorage.getItem("prototypeQueueCurrent")||22);
+const queuePatient=36;
+function renderQueue(){
+  queueCurrent=Math.max(1,Math.min(queuePatient,queueCurrent));
+  const waiting=Math.max(queuePatient-queueCurrent,0);
+  currentNo.textContent=queueCurrent;waitingNo.textContent=waiting+"位";queueBar.style.width=Math.round(queueCurrent/queuePatient*100)+"%";
+  if(waiting===0){queueText.textContent="已輪到您，請準備進入診間";queueMode.textContent="🔴 結束衛教並準備看診"}
+  else if(waiting<=2){queueText.textContent="約3分鐘內，請留在診間附近";queueMode.textContent="🔴 建議：快速產生健康護照"}
+  else if(waiting<=7){queueText.textContent="約5至10分鐘，請留意叫號";queueMode.textContent="🟡 建議：重點衛教模式"}
+  else if(waiting<=15){queueText.textContent="約10至20分鐘，可安心互動";queueMode.textContent="🟢 建議：運動與生活目標衛教"}
+  else{queueText.textContent="候診時間充足，可完成完整流程";queueMode.textContent="🟢 建議：完整共同衛教模式"}
+}
+function saveQueue(){localStorage.setItem("prototypeQueueCurrent",String(queueCurrent))}
+function advanceQueue(step){queueCurrent=Math.min(queuePatient,queueCurrent+step);saveQueue();renderQueue()}
+function setQueueStage(stage){
+  const nums={full:18,focus:30,passport:34,visit:36};
+  queueCurrent=nums[stage]??22;saveQueue();renderQueue();
+  if(stage==="passport") show("passport");
+}
+function resetQueue(){queueCurrent=22;saveQueue();renderQueue()}
+
+today.textContent=new Date().toLocaleDateString("zh-TW");
+renderActivities();
+setDone(true);
+renderWeek();
+restoreAssessment();
+renderStarResult();
+renderStarEnergy();
+renderQueue();
+renderReview();
+renderPassport();
+</script>
+</body>
+</html>
